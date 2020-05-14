@@ -1,0 +1,200 @@
+---
+title: "Lesson 0: Primer in ecological thinking"
+author: "Alyssa Willson"
+date: "13/5/2020"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(viridis)
+library(deSolve)
+```
+
+## Objectives
+
+1. Become familiar with some basic ecological questions
+
+2. Consider how to answer the questions identified
+
+3. Define the quantitative information required for each example
+
+## Today we will consider:
+
+1. Population ecology: dynamics of one species through time
+
+2. Community ecology: dynamics of multiple species through time
+
+3. Disease ecology: progression of an epidemic through time
+
+## Population ecology
+
+* The question: How does the size of a population change over time?
+
+* The context: the number of seals in Washington
+
+* The method: ??
+
+    + $\textbf{How do we think the number of seals will change}$
+      $\textbf{over time?}$
+    
+    + $\textbf{Draw the curve. We will revisit how to represent}$
+      $\textbf{this mathematically later.}$
+      
+## Population ecology: problem visualization
+
+```{r, echo = F}
+r = 0.2
+K = 7500
+x0 = 1600
+nstep = 50
+x = rep(0, nstep)
+x[1] = x0
+
+for(i in 2:nstep){
+  x[i] = x[i - 1] + r * x[i - 1] * (1 - x[i - 1] / K)
+}
+
+ggplot() +
+  geom_line(aes(x = 1:nstep, y = x), size = 1.25) +
+  xlab('Time') + ylab('Number of seals')
+```
+
+## Population ecology: analysis
+
+```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+ggplot() +
+  geom_line(aes(x = 1:nstep, y = x), size = 1.25) +
+  xlab('Time') + ylab('Number of seals')
+```
+
+</div>
+
+* Under what circumstances does the population increase?
+
+* Stay the same?
+
+* Could the population ever decrease?
+
+## Community ecology
+
+* The question: How do predator and prey populations affect each other over time?
+
+* The context: classic example from Isle Royale, Michigan
+
+    + Predator: wolves
+  
+    + Prey: moose
+  
+* The method: ??
+
+    + $\textbf{Do we expect the size of one species' population to}$
+      $\textbf{affect the other?  If so, how?}$
+    
+    + $\textbf{Draw a curve for each of the species on the same}$
+      $\textbf{graph}$
+      
+## Community ecology: problem visualization
+
+```{r}
+Pars <- c(alpha = 1.5, beta = .1, gamma = .5, delta = .1)
+State <- c(x = 10, y = 10)
+
+LotVmod <- function (Time, State, Pars) {
+  with(as.list(c(State, Pars)), {
+    dx = x*(alpha - beta*y)
+    dy = -y*(gamma - delta*x)
+    return(list(c(dx, dy)))
+  })
+}
+
+out = ode(func = LotVmod, y = State, parms = Pars, times = seq(1, 50, 0.1))
+
+ggplot() +
+  geom_line(aes(x = out[,1], y = out[,2], color = 'Prey'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,3], color = 'Predator'), size = 1.25) +
+  xlab('Time') + ylab('Population size') +
+  theme(legend.title = element_blank())
+```
+
+## Community ecology: analysis
+
+```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+ggplot() +
+  geom_line(aes(x = out[,1], y = out[,2], color = 'Prey'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,3], color = 'Predator'), size = 1.25) +
+  xlab('Time') + ylab('Population size') +
+  theme(legend.title = element_blank())
+```
+
+</div>
+
+* When would you expect the prey population to increase? to decrease?
+
+* When would the predator population increase and decrease?
+
+* What is the general relationship between these two populations?
+
+## Disease ecology
+
+* The question: how does the number of people susceptible to the disease, infected with the disease, and recovered from the disease change over time?
+
+* The context: seasonal influenza in a community over the course of one flu season
+
+* The method: ??
+
+    + $\textbf{How will each pool (susceptible, infected, recovered)}$
+      $\textbf{change over time?}$
+    
+    + $\textbf{Draw one possible scenario for each pool.}$
+    
+## Disease ecology: problem visualization
+
+```{r}
+beta = 1
+gamma = 0.5
+State = c(S = 10, I = 1, R = 0)
+Pars = c(beta, gamma)
+
+SIR = function(time, State, Pars){
+  with(as.list(c(State, Pars)),{
+    N = S + I + R
+    dS = -beta * (S * I) / N
+    dI = (beta * (S * I) / N) - gamma * I
+    dR = gamma * I
+    return(list(c(dS, dI, dR)))
+  })
+}
+
+out = ode(func = SIR, y = State, parms = Pars, times = seq(1, 15, 0.1))
+
+colors = viridis(3)
+ggplot() +
+  geom_line(aes(x = out[,1], y = out[,2], color = 'S'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,3], color = 'I'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,4], color = 'R'), size = 1.25) +
+  xlab('Time') + ylab('Fraction of population') +
+  scale_color_manual(values = c('S' = colors[1], 'I' = colors[2], 'R' = colors[3]), name = '', breaks = c('S', 'I', 'R'))
+```
+
+## Disease ecology: analysis
+
+```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+ggplot() +
+  geom_line(aes(x = out[,1], y = out[,2], color = 'S'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,3], color = 'I'), size = 1.25) +
+  geom_line(aes(x = out[,1], y = out[,4], color = 'R'), size = 1.25) +
+  xlab('Time') + ylab('Fraction of population') +
+  scale_color_manual(values = c('S' = colors[1], 'I' = colors[2], 'R' = colors[3]), name = '', breaks = c('S', 'I', 'R'))
+```
+
+</div>
+
+* Describe how each curve changes over time.
+
+* Can the "S" pool ever increase?  Can the "R" pool ever decrease?
+
+* What does the "I" pool represent?
+
