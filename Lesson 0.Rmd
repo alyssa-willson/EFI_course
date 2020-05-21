@@ -25,7 +25,7 @@ library(deSolve)
 
 1. Population ecology: dynamics of one species through time
 
-2. Community ecology: dynamics of multiple species through time
+2. Ecosystem ecology: amount of carbon in the atmosphere over time
 
 3. Disease ecology: progression of an epidemic through time
 
@@ -64,7 +64,7 @@ ggplot() +
 
 ## Population ecology: analysis
 
-```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+```{r, echo = F, out.width= "50%", out.extra='style="float:right; padding:10px"'}
 ggplot() +
   geom_line(aes(x = 1:nstep, y = x), size = 1.25) +
   xlab('Time') + ylab('Number of seals')
@@ -78,64 +78,60 @@ ggplot() +
 
 * Could the population ever decrease?
 
-## Community ecology
+## Ecosystem ecology
 
-* The question: How do predator and prey populations affect each other over time?
+* The question: how does the amount of carbon in the atmosphere change as a result of fossil fuel emissions over time?
 
-* The context: classic example from Isle Royale, Michigan
+* The context: global atmospheric carbon, accounting for global terrestrial photosynthesis & respiration and anthropogenic fossil fuel emissions
 
-    + Predator: wolves
-  
-    + Prey: moose
-  
 * The method: ??
 
-    + $\textbf{Do we expect the size of one species' population to}$
-      $\textbf{affect the other?  If so, how?}$
-    
-    + $\textbf{Draw a curve for each of the species on the same}$
-      $\textbf{graph}$
+    + $\textbf{How do you think the amount of C in the atmosphere}$
+      $\textbf{will change over time (ignore subannual fluxes)}$
       
-## Community ecology: problem visualization
+    + $\textbf{Draw what you think will happen}$
+    
+## Ecosystem ecology: problem visualization
 
-```{r}
-Pars <- c(alpha = 1.5, beta = .1, gamma = .5, delta = .1)
-State <- c(x = 10, y = 10)
+```{r, echo = F}
+nyear = 200
+AC = rep(0, nyear)
+TC = rep(0, nyear)
 
-LotVmod <- function (Time, State, Pars) {
-  with(as.list(c(State, Pars)), {
-    dx = x*(alpha - beta*y)
-    dy = -y*(gamma - delta*x)
-    return(list(c(dx, dy)))
-  })
+## All numbers in GtC or GtC/year
+## https://galenmckinley.github.io/CarbonCycle/
+An = 6.4 + 1.6 # fossil fuels + land use
+R = 120 # respiration
+GPP = 120 # photosynthesis
+
+TC[1] = 2300 # vegetation, soil + fossil fuel sources (ocean not considered)
+AC[1] = 597 # atmosphere
+
+for(i in 2:nyear){
+  TC[i] = TC[i - 1] + GPP - R
+  AC[i] = AC[i - 1] + R - GPP + An
 }
 
-out = ode(func = LotVmod, y = State, parms = Pars, times = seq(1, 50, 0.1))
-
 ggplot() +
-  geom_line(aes(x = out[,1], y = out[,2], color = 'Prey'), size = 1.25) +
-  geom_line(aes(x = out[,1], y = out[,3], color = 'Predator'), size = 1.25) +
-  xlab('Time') + ylab('Population size') +
-  theme(legend.title = element_blank())
+  geom_line(aes(x = 1:nyear, y = AC), col = 'lightblue', size = 1.25) +
+  xlab('Time (yr)') + ylab('Atmospheric C (Gt C)')
 ```
 
-## Community ecology: analysis
+## Ecosystem ecology: analysis
 
-```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+```{r, echo = F, out.width= "50%", out.extra='style="float:right; padding:10px"'}
 ggplot() +
-  geom_line(aes(x = out[,1], y = out[,2], color = 'Prey'), size = 1.25) +
-  geom_line(aes(x = out[,1], y = out[,3], color = 'Predator'), size = 1.25) +
-  xlab('Time') + ylab('Population size') +
-  theme(legend.title = element_blank())
+  geom_line(aes(x = 1:nyear, y = AC), col = 'lightblue', size = 1.25) +
+  xlab('Time (yr)') + ylab('Atmospheric C (Gt C)')
 ```
 
 </div>
 
-* When would you expect the prey population to increase? to decrease?
+* As is, is there any way for atmospheric carbon to decrease?
 
-* When would the predator population increase and decrease?
+* How could you change the model to potentially allow atmospheric carbon to decrease? Draw what might happen with your change.
 
-* What is the general relationship between these two populations?
+* What else could you add to the model to make it more realistic?
 
 ## Disease ecology
 
@@ -152,7 +148,7 @@ ggplot() +
     
 ## Disease ecology: problem visualization
 
-```{r}
+```{r, echo = F}
 beta = 1
 gamma = 0.5
 State = c(S = 10, I = 1, R = 0)
@@ -181,7 +177,7 @@ ggplot() +
 
 ## Disease ecology: analysis
 
-```{r,  out.width= "50%", out.extra='style="float:right; padding:10px"'}
+```{r, echo = F, out.width= "50%", out.extra='style="float:right; padding:10px"'}
 ggplot() +
   geom_line(aes(x = out[,1], y = out[,2], color = 'S'), size = 1.25) +
   geom_line(aes(x = out[,1], y = out[,3], color = 'I'), size = 1.25) +
